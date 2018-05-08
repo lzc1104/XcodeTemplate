@@ -1,0 +1,144 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.huaying.framework.protos";
+option java_outer_classname = "BasicProtos";
+option objc_class_prefix = "";
+
+package framework;
+
+import "CommonModel.proto";
+
+/*
+
+消息定义命名规范
+
+创建              <分类名>_ADD        请求参数和返回参数一般为对象本身
+根据ID获取对象     <分类名>_GET_BY_ID  参数为 PBIntValue 或者 PBStrValue （如果其他特殊情况另外定义独立请求体），返回为对象
+获取列表          <分类名>_GET_LIST   参数为独立请求体 PBGetXXXListReq 返回为对象列表
+搜索             <分类名>_SEARCH     参数为独立请求体 PBSearchXXXReq 返回为对象列表
+更新保存对象       <分类名>_UPDATE     参数为对象（一般只能更新对象的其中部分信息，需注明），返回对象本身
+删除             <分类名>_DELETE     参数为对象或者对象ID，返回空
+其他业务操作       <分类名>_<操作名>    参数为 PBXXXReq 返回为 PBXXXRsp （或者对象，可根据实际情况定义）
+
+*/
+
+// 通用消息定义在 0 - 9999 之间
+enum PBMessageType {
+    DEFAULT = 0;
+
+    // 系统配置
+    BASIC_CONFIG_GET = 1;                       // 获取基础配置信息，void --> PBBasicConfig
+    SYSTEM_PARA_ADD = 2;                        // 增加系统参数， PBSystemParaConfig -> PBSystemParaConfig
+    SYSTEM_PARA_UPDATE = 3;                     // 更新系统参数, PBSystemParaConfig -> PBSystemParaConfig
+    SYSTEM_PARA_GET_LIST = 4;                   // 获取系统参数， void -> PBSystemParaConfigList
+    SYSTEM_PARA_GET_ONE = 5;                    // 获取某个参数， PBStrValue -> PBSystemParaConfig
+    SYSTEM_PARA_GET_ONE_DEFAULT = 6;            // 获取某个参数，没有则返回默认值，PBSystemParaReq -> PBSystemParaConfig
+
+    // 用户反馈
+    FEEDBACK_ADD = 31;                          // 用户发送反馈，PBUserFeedback(content & deviceType & appVersion & user required) --> PBUserFeedback
+    FEEDBACK_GET_LIST = 32;                     // 获取反馈列表，PBGetUserFeedBackListReq -> PBUserFeedbackList
+    FEEDBACK_DELETE = 33;                       // 删除反馈, PBIntValue -> void
+    FEEDBACK_UPDATE = 34;                       // 更新反馈，PBUserFeedback(feedbackId & remark & required) -> PBUserFeedback
+
+    // 后台管理员
+    ADMIN_LOGIN = 41;                           // 管理员登录，PBAdmin(mobile & password required) --> PBAdmin
+    ADMIN_ADD = 42;                             // 新增管理员用户，PBAdmin(realName, mobile, password & roles required) --> PBAdmin
+    ADMIN_GET_LIST = 43;                        // 获取管理员列表，PBGetAdminListReq --> PBAdminList
+    ADMIN_RESET_PASSWORD = 44;                  // 重置管理员密码，PBResetAdminPasswordReq --> PBAdmin
+    ADMIN_UPDATE = 45;                          // 修改管理员信息，PBAdmin(adminId, realName, mobile, roles & locked required) --> PBAdmin
+
+    // 后台管理员操作日志
+    ADMIN_LOG_GET_LIST = 51;                    // 获取管理员操作日志列表，PBGetAdminLogListReq --> PBAdminLogList
+
+    // 位置区域相关
+    LOCATION_GET_ALL = 61;                      // 获取完整的Location数据, PBLocationGetAllReq (本地版本的时间戳) -> PBLocationData
+    LOCATION_DETECT = 62;                       // 根据经纬度查询对应的Location数据, PBLocationDetectReq -> PBLocation
+    LOCATION_GET_PROVINCE = 64;                 // 得到所有省份 PBStrValue --> PBLocationList
+    LOCATION_GET_CITY_BY_PROVINCE = 65;         // 根据省份得到所有市 PBLocationQueryReq --> PBLocationList
+    LOCATION_GET_DISTRICT_BY_CITY = 66;         // 根据市得到区县 PBLocationQueryReq --> PBLocationList
+    LOCATION_GET_BY_ID = 67;                    // 根据id 得到 PBIntValue --> PBLocation
+    LOCATION_HOT_CITIES = 68;                   // 获取热门城市信息  void --> PBLocationList
+    LOCATION_SET_HOT_CITY = 69;                 // 设置热门城市信息  PBStrValue --> void
+    LOCATION_UN_SET_HOT_CITY = 70;              // 取消设置热门城市信息  PBStrValue --> void
+    LOCATION_REFRESH_CACHE = 71;                // 刷新location缓存 void --> void
+    LOCATION_UPDATE_CITY_LEVEL = 72;            // 设置城市的城市等级 PBUpdateLocationCityLevelReq --> void
+    LOCATION_GET_BY_CITY_LEVEL = 73;            // 根据城市等级获取城市列表 PBGetLocationByCityLevelReq --> PBLocationList
+    LOCATION_GET_LNG_LAT = 74;                  // 根据地址名称 和城市id 获取经纬度 PBGetLocationLntLat --> PBLocationLntLat
+
+    PUSH_MESSAGE_ADD = 99;                      // 添加推送消息 PBPushMessage ->  void
+    PUSH_MESSAGE_SEARCH_LIST = 100;             // 获取推送消息列表 PBPushMessageSearchListReq -> PBPushMessageList
+    PUSH_MESSAGE_GET_BY_ID = 101;               // 单独查看某条消息 PBIntValue -> PBPushMessage
+
+
+    // 通过 WebSocket 发送的通用消息，9000 - 9999
+
+    // 客户端请求 9000 - 9499
+    SOCKET_LOGIN = 9000;                        // 连接建立后，发送此消息，服务器将此连接与用户关联，PBStrValue(userId as string) --> void
+    SOCKET_PING_PONG = 9001;                    // WebSocket 心跳消息类型，消息体的内容随意，但不要为空，服务器收到消息之后，会返回一个相同类型的消息
+    SOCKET_SUBSCRIBE_TOPIC = 9002;              // 订阅 topic，服务器可能会按照 topic 对一组用户进行广播，PBStrValue(topic) --> void
+    SOCKET_UNSUBSCRIBE_TOPIC = 9003;            // 解除订阅 topic，PBStrValue(topic) --> void
+
+    // 服务器推送 9500 - 9999
+    SOCKET_MULTI_LOGIN = 95000;                 // 异地登录，服务器推送，PBUserLoginData
+}
+
+// 消息请求包
+message PBMessageRequest {
+    bool encrypted = 1;                         // 数据是否加密
+    bool compressed = 2;                        // 数据是否压缩
+    uint32 type = 3;                            // 消息类型
+    bytes messageData = 4;                      // 请求数据
+
+    uint64 requestId = 5;                       // 请求 ID
+    uint64 timestamp = 7;                       // 客户端时间戳
+    string qualifier = 10;                      // 接口限定符，当消息类型相同时，使用此字段标识接口的唯一性，可视为同一接口的不同实现，也可当成版本号使用
+
+    PBDevice device = 8;                        // 设备信息
+    PBNetwork network = 9;                      // 网络信息
+
+    string appVersion = 12;                     // 应用程序版本号
+    string appKey = 13;                         // 客户端 APP KEY，用于加密
+    string accessToken = 14;                    // 用户登录后服务器返回的 token，用于登录校验
+    string signature = 15;                      // 数据签名，用于防伪，暂无用
+
+    uint32 adminId = 16;                        // 管理员 ID（后台管理系统使用）
+    string adminAccessToken = 17;               // 管理员登录后服务器返回的token，用于登录校验
+}
+
+// 消息响应包
+message PBMessageResponse {
+    bool encrypted = 1;                         // 返回数据是否加密
+    bool compressed = 2;                        // 返回数据是否压缩
+    uint32 type = 3;                            // 消息类型
+    bytes messageData = 4;                      // 返回数据
+
+    string appKey = 8;                          // APP KEY，用于加密
+    uint64 requestId = 5;                       // 该响应对应的请求 ID
+    uint32 resultCode = 6;                      // 返回的结果码
+    string resultInfo = 7;                      // 返回的结果消息提示文本（用于错误提示）
+}
+
+// WebSocket 消息包
+message PBSocketMessage {
+    bool encrypted = 1;                         // 数据是否加密
+    bool compressed = 2;                        // 数据是否压缩
+    uint32 type = 3;                            // 消息类型
+    bytes messageData = 4;                      // 请求数据
+    bool ack = 5;                               // 该消息是否为 ack 响应
+
+    uint64 requestId = 6;                       // 该消息的唯一ID，当 ack 为 false 时，由发送方生成，当 ack 为 true 时，须与请求消息的 ID 保持一致
+    uint64 timestamp = 8;                       // 发送消息的时间戳
+    string qualifier = 17;                      // 接口限定符，当消息类型相同时，使用此字段标识接口的唯一性，可视为同一接口的不同实现，也可当成版本号使用
+
+    PBDevice device = 9;                        // 设备信息
+    PBNetwork network = 10;                     // 网络信息
+
+    string appVersion = 11;                     // 应用程序版本号
+    string appKey = 12;                         // 客户端APP KEY，各个客户端不同，用于加密
+    string accessToken = 13;                    // 用户登录后服务器返回的 token，用于登录校验
+    string signature = 14;                      // 数据签名，用于防伪，暂无用
+
+    uint32 resultCode = 15;                     // 结果码，仅当 ack 为 true 时使用
+    string resultInfo =16;                      // 结果提示文本，仅当 ack 为 true 时使用
+}

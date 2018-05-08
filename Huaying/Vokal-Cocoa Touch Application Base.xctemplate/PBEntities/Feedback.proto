@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.huaying.framework.protos.feedback";
+option java_outer_classname = "FeedbackProtos";
+option objc_class_prefix = "";
+
+package framework;
+
+import "CommonModel.proto";
+
+enum PBFeedbackStatus {
+    FEEDBACK_PENDING = 0;                       // 待处理
+    FEEDBACK_PROCESSED = 1;                     // 已处理
+}
+
+message PBUserFeedback {
+    uint32 feedbackId = 1;                      // 反馈id
+    string content = 2;                         // 用户反馈内容
+    uint64 createDate = 3;                      // 反馈日期
+    PBDeviceType deviceType = 4;                // 提交反馈设备类型
+    string appVersion = 5;                      // app版本
+    uint32 userId = 6;                          // 反馈用户id
+    string remark = 7;                          // 管理员处理的备注
+    PBFeedbackStatus status = 9;                // 反馈状态
+    bytes businessUser = 42;                    // 具体的业务User对象
+}
+
+message PBUserFeedbackList {
+    repeated PBUserFeedback feedBacks = 1;          // 反馈列表
+    PBPageInfo pageInfo = 2;                        // 分页信息
+}
+
+message PBGetUserFeedBackListReq {
+    uint64 beginDate = 1;                       // 开始日期，
+    uint64 endDate = 2;                         // 结束日期
+    string keyword = 3;                         // 内容关键字
+
+    PBPagePara page = 8;                        // 分页信息
+}

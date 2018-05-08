@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.huaying.framework.protos.admin";
+option java_outer_classname = "AdminProtos";
+option objc_class_prefix = "";
+
+package framework;
+
+import "CommonModel.proto";
+
+message PBAdmin {
+    uint32 adminId = 1;                     // ID
+    string realName = 2;                    // 真实姓名
+    string password = 3;                    // 密码
+    string mobile = 4;                      // 手机
+    uint64 lastLoginDate = 5;               // 上次登录时间
+    repeated uint32 roles = 6;              // 角色
+    bool locked = 7;                        // 是否锁定
+    bool isSuper = 8;                       // 是否超级管理员
+
+    string adminAccessToken = 20;           // 管理员登录时返回的token
+}
+
+
+message PBAdminLog {
+    uint64 id = 1;                          // ID
+    uint32 adminId = 2;                     // adminId
+    string adminName = 3;                   // 管理员名字
+    string event = 4;                       // 事件
+    string description = 5;                 // 操作的具体描述
+    uint64 createDate = 6;                  // 操作日期
+    uint32 messageType = 7;                 // 消息类型
+}
+
+message PBGetAdminListReq {
+    repeated int32 roles = 1;               // 角色,空表示全部
+    PBBoolValue locked = 2;                 // 是否锁定
+    string searchKey = 3;                   // 搜索关键字（可搜索真实姓名和手机）
+    PBPagePara page = 4;                    // 分页参数
+}
+
+message PBAdminList {
+    repeated PBAdmin admins = 1;            // 管理员列表
+    PBPageInfo pageInfo = 2;                // 分页信息
+}
+
+message PBResetAdminPasswordReq {
+    uint32 adminId = 1;                     // 管理员 ID
+    string originPassword = 2;              // 原密码
+    string newPassword = 3;                 // 新密码
+}
+
+message PBGetAdminLogListReq {
+    string keyword = 1;                     // 事件搜索关键字
+    PBPagePara page = 2;                    // 分页参数
+}
+
+message PBAdminLogList {
+    repeated PBAdminLog logs = 1;           // 管理员操作日志列表
+    PBPageInfo pageInfo = 2;                    // 分页信息
+}

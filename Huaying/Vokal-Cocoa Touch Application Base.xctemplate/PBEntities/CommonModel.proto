@@ -1,0 +1,140 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.huaying.framework.protos";
+option java_outer_classname = "CommonProtos";
+option objc_class_prefix = "";
+
+package framework;
+
+// Base values
+
+message PBIntValue {
+    uint32 value = 1;
+}
+
+message PBLongValue {
+    uint64 value = 1;
+}
+
+message PBSIntValue {
+    int32 value = 1;
+}
+
+message PBSLongValue {
+    int64 value = 1;
+}
+
+message PBFloatValue {
+    float value = 1;
+}
+
+message PBDoubleValue {
+    double value = 1;
+}
+
+message PBStrValue {
+    string value = 1;
+}
+
+message PBBoolValueHolder {
+    bool value = 1;
+}
+
+enum PBBoolValue {
+    BOOL_NONE = 0;                          // 空
+    BOOL_TRUE = 1;                          // true
+    BOOL_FALSE = 2;                         // false
+}
+
+message PBBytesList {
+    repeated bytes data = 1;
+}
+
+// 键值对对象
+message PBKeyValue {
+    string key = 1;
+    string value = 2;
+}
+
+//ListKeyValue
+message PBKeyValueList {
+    repeated PBKeyValue kv = 1;
+}
+
+
+// Basic models
+
+enum PBDeviceType {
+    DEVICE_ANDROID = 0;                     // 安卓
+    DEVICE_IOS = 1;                         // 苹果
+    DEVICE_PC = 2;                          // PC
+}
+
+message PBDeviceScreenSize {
+    int32 width = 1;                        // 屏幕宽度
+    int32 height = 2;                       // 屏幕高度
+}
+
+message PBDevice {
+    string deviceOs = 1;                    // 设备操作系统
+    string deviceModel = 2;                 // 设备模型
+    string deviceId = 3;                    // 设备ID
+    PBDeviceType deviceType = 4;            // 设备类型，参考PBDeviceType
+    PBDeviceScreenSize screenSize = 5;      // 设备屏幕尺寸
+}
+
+enum PBNetworkType {
+    NET_UNKNOWN = 0;                        // 未知网络
+    NET_WIFI = 1;                           // WIFI
+    NET_2G = 2;                             // 2G网络
+    NET_3G = 3;                             // 3G网络
+    NET_4G = 4;                             // 4G网络
+}
+
+message PBNetwork {
+    PBNetworkType type = 1;                 // 网络类型
+}
+
+enum PBPaymentChannel {
+    PAY_ALI = 0;                            // 支付宝支付
+    PAY_WECHAT = 1;                         // 微信支付
+    PAY_APPSTORE_IAP = 2;                   // 苹果商店 IAP
+    PAY_WECHAT_JS = 3;                      // 微信支付js
+}
+
+enum PBPaymentResult {
+    PAY_TO_BE_PAID = 0;                                     // 未支付
+    PAY_SUC = 1;                                            // 支付成功
+    PAY_FAIL = 2;                                           // 支付失败
+}
+
+
+enum PBSex {
+    SEX_NONE = 0;                           // 未填
+    SEX_MALE = 1;                           // 男
+    SEX_FEMALE = 2;                         // 女
+}
+
+// 分页参数
+message PBPagePara {
+    uint32 offset = 1;                      // 偏移量
+    uint32 limit = 2;                       // 限制数
+}
+
+// 分页信息
+message PBPageInfo {
+    uint32 total = 1;                       // 符合条件的总记录数目
+    uint32 pageOffset = 2;                  // 返回记录的开始的位置，默认从 0 开始
+    uint32 pageSize = 3;                    // 实际返回的结果数，不是 limit
+}
+
+// 用户的登录信息
+message PBUserLoginData {
+    string userId = 1;                      // 用户 ID，不同业务系统的用户 ID 可能有不同类型，此处统一转成 string
+    string userName = 2;                    // 用户昵称
+    PBDevice lastLoginDevice = 3;           // 最近登录的设备信息
+    string lastLoginClientIp = 4;           // 最近登录的 IP
+    string lastLoginLocation = 5;           // 最近登录的地点（通过 IP 获得）
+    uint64 lastLoginDate = 6;               // 最近登录的时间
+}

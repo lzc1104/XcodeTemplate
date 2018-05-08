@@ -1,0 +1,30 @@
+disabled_rules:
+  - control_statement
+  - cyclomatic_complexity
+  - file_length
+  - function_body_length
+  - function_parameter_count
+  - line_length
+  - nesting
+  - todo
+  - trailing_whitespace
+  - type_body_length
+  - type_name
+  - unused_optional_binding
+  - variable_name
+
+opt_in_rules:
+  - force_unwrapping
+
+force_unwrapping:
+  severity: error
+
+trailing_comma:
+  mandatory_comma: true
+
+excluded:
+  - Pods
+  - ___PACKAGENAME___/CoreDataAndModels/private
+  - ___PACKAGENAME___/Scripts
+  - ___PACKAGENAME___/Resources
+  - R.generated.swift
